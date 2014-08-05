@@ -19,6 +19,8 @@ import javax.ws.rs.core.Response.Status;
 
 import org.codehaus.jackson.map.ObjectMapper;
 
+import com.sun.research.ws.wadl.Response;
+
 import java.io.IOException;
 import java.util.*;
 
@@ -26,29 +28,29 @@ import java.util.*;
 public class WebService {
 	
 	public static int sequenciaCliente;
-	public static List<Cliente> clientes = new ArrayList<Cliente>();
+	public static List<Post> posts = new ArrayList<Post>();
 	private String json;
 	ObjectMapper mapper = new ObjectMapper();
 	
 	@DELETE
 	@Path("/{id}")
-	public void removerCliente(@PathParam("id") String id){
-		Cliente c = searchClienteById(id);
-		clientes.remove(c);
+	public void removerPost(@PathParam("id") String id){
+		Post c = searchPostById(id);
+		posts.remove(c);
 	}
 	
 	@PUT
 	@Path("/{id}")
-	public void editCliente(@PathParam("id") String id, @FormParam("novoNome") String nome){
-		Cliente c = searchClienteById(id);
-		c.setNome(nome);
+	public void editPost(@PathParam("id") String id, @FormParam("novaMsg") String msg){
+		Post c = searchPostById(id);
+		c.setMsg(msg);
 	}
 	
 	@GET
 	@Path("/{id}")
 	@Produces(MediaType.APPLICATION_JSON)
-	public String getCliente(@PathParam("id") String id){
-		Cliente c = searchClienteById(id);
+	public String getPost(@PathParam("id") String id){
+		Post c = searchPostById(id);
 		if(c==null){
 			throw new WebApplicationException(Status.NOT_FOUND);
 		}try{
@@ -60,27 +62,29 @@ public class WebService {
 	
 	@GET
 	@Produces(MediaType.APPLICATION_JSON)
-	public String getAllClientes(){
+	public String getAllPost(){
+		
 		try{
-			json = mapper.writeValueAsString(clientes);
+			json = mapper.writeValueAsString(posts);
 		}catch(IOException e){
 			throw new WebApplicationException(Status.BAD_REQUEST);
 		}
-		return json;
+		return json; 
+
 	}
 	
 	@POST
 	@Produces(MediaType.APPLICATION_JSON)
-	public String creatCliente(@FormParam("nome") String nome){
-		Cliente novoCliente = new Cliente(nome);
+	public String creatPost(@FormParam("msg") String msg){
+		Post novoCliente = new Post(msg);
 		sequenciaCliente++;
 		novoCliente.setId(sequenciaCliente);
-		clientes.add(novoCliente);
+		posts.add(novoCliente);
 		throw new WebApplicationException(Status.OK);
 	}
 	
-	private Cliente searchClienteById(String id) {
-		for (Cliente c : clientes) {
+	private Post searchPostById(String id) {
+		for (Post c : posts) {
 			if (c.getId().toString().equals(id)) {
 				return c;
 			}
@@ -91,22 +95,22 @@ public class WebService {
 	@GET
 	@Path("/{id}/comment")
 	@Produces(MediaType.APPLICATION_JSON)
-	public String getComprasById(@PathParam("id") String id){
-		Cliente c = searchClienteById(id);
+	public String getCommentById(@PathParam("id") String id){
+		Post c = searchPostById(id);
 		try{
-			return mapper.writeValueAsString(c.getCompras());
+			return mapper.writeValueAsString(c.getComments());
 		}catch(IOException e){
 			throw new WebApplicationException(Status.NOT_FOUND);
 		}
 	}
 	
-	@POST
+	@GET
 	@Path("/{id}/comment/{sequence}")
 	@Produces(MediaType.APPLICATION_JSON)
-	public String getCompra(@PathParam("id") String id, @PathParam("sequence") String sequence){
-		Cliente c = searchClienteById(id);
+	public String getComment(@PathParam("id") String id, @PathParam("sequence") String sequence){
+		Post c = searchPostById(id);
 		try{
-			return mapper.writeValueAsString(c.getCompra(sequence));
+			return mapper.writeValueAsString(c.getComment(sequence));
 		}catch(IOException e){
 			throw new WebApplicationException(Status.NOT_FOUND);
 		}
@@ -116,25 +120,25 @@ public class WebService {
 	@POST
 	@Path("/{id}/comment")
 	@Produces(MediaType.APPLICATION_JSON)
-	public String createCompra(@PathParam("id") String id,
-			@FormParam("nome") String nome) {
-		Cliente c = searchClienteById(id);
-		c.addCompra(nome);
+	public String createComment(@PathParam("id") String id,
+			@FormParam("msg") String msg) {
+		Post c = searchPostById(id);
+		c.addComment(msg);
 		return Status.ACCEPTED.toString();
 	}
 	
 	@PUT
 	@Path("/{id}/comment/{sequence}")
-	public void editCompra(@PathParam("id")String id,
+	public void editComment(@PathParam("id")String id,
 			@PathParam("sequence")String sequence,
-			@FormParam("novaNome") String nome){
-		searchClienteById(id).getCompra(sequence).setNome(nome);
+			@FormParam("novaMsg") String msg){
+		searchPostById(id).getComment(sequence).setMsg(msg);
 	}
 	
 	@DELETE
 	@Path("/{id}/comment/{sequence}")
-	public void removerCompra(@PathParam("id") String id, 
+	public void removerComment(@PathParam("id") String id, 
 			@PathParam("sequence") String sequence){
-		searchClienteById(id).removerCompra(sequence);
+		searchPostById(id).removeComment(sequence);
 	}
 }
